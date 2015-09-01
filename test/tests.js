@@ -720,3 +720,37 @@ test( "Custom offset", function() {
   deepEqual (el2.spectrum("container").offset(), {top: 100, left: 100});
   el2.spectrum("hide");
 });
+
+test( "Remove binding handlers on hide", function() {
+  var el = $("<input/>").spectrum(), 
+      events = [ { 'owner': window, 'name': 'resize', 'desc': 'Resize event on window' }, 
+                 { 'owner': document, 'name': 'click', 'desc': 'Click event on document'}, 
+                 { 'owner': document, 'name': 'keydown', 'desc': 'Keydown event on document'} ],
+      eventOwner,
+      eventName,
+      showCounts = [],
+      hideCounts = [],
+      i;
+
+  // capture number of events that exist after show()
+  el.spectrum("show");
+  for (i = 0; i < events.length; i++) {
+    eventOwner = events[i].owner;
+    eventName = events[i].name; 
+    showCounts.push($._data(eventOwner, "events") && $._data(eventOwner, "events")[eventName] ? $._data(eventOwner, "events")[eventName].length : 0);
+  }
+
+	
+  // find the number of events listed after hide()
+  el.spectrum("hide");
+  for (i = 0; i < events.length; i++) {
+    eventOwner = events[i].owner;
+    eventName = events[i].name; 
+    hideCounts.push($._data(eventOwner, "events") && $._data(eventOwner, "events")[eventName] ? $._data(eventOwner, "events")[eventName].length : 0);
+  }
+
+  // validate that hide() removes the events created by show()
+  for (i = 0; i < events.length; i++) {
+    equal ( hideCounts[i], showCounts[i] - 1, 'On hide: ' + events[i].desc + ' removed.');
+  }
+});
